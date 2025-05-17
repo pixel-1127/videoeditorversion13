@@ -166,7 +166,7 @@ const VideoPreview = ({ videoRef, isPlaying, currentTime, duration, tracks, onTi
       player.current.play().catch(error => {
         console.error('Play error:', error);
         // Try with muted to overcome autoplay restrictions
-        player.current.muted(true);
+        // player.current.muted(true); // Don't mute by default
         player.current.play().catch(e => {
           console.error('Play error even with mute:', e);
           setPlaybackError(true);

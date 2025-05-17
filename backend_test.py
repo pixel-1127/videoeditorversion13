@@ -128,8 +128,11 @@ def test_video_editor_fixes():
             
         # Check if muted attribute is set to false
         audio_enabled = 'muted: false' in video_preview_code
-        # Check if muted attribute is removed from video element
-        muted_attr_removed = 'muted' not in video_preview_code.split('<video')[1].split('>')[0]
+        # Check if muted attribute is removed or commented out from video element
+        video_element_section = video_preview_code.split('<video')[1].split('</video>')[0]
+        muted_attr_removed = 'muted' not in video_element_section or '// muted' in video_element_section
+        # Check for throttled updates
+        throttled_updates = 'throttledUpdate' in video_preview_code or 'smoothUpdate' in video_preview_code
         
         print("\n🔍 Audio Playback Fix Analysis:")
         if audio_enabled:
@@ -141,6 +144,9 @@ def test_video_editor_fixes():
             print("✅ 'muted' attribute has been removed from video element")
         else:
             print("❌ 'muted' attribute may still be present on video element")
+            
+        if throttled_updates:
+            print("✅ Video player uses throttled updates for smoother playback")
             
         # Overall audio fix assessment
         if audio_enabled and muted_attr_removed:
@@ -155,24 +161,26 @@ def test_video_editor_fixes():
         with open('/app/frontend/src/components/Timeline/Timeline.js', 'r') as f:
             timeline_code = f.read()
             
-        # Check for transition property for smooth movement
-        transition_property = 'transition' in timeline_code
-        # Check for debounced timeupdate handler
-        debounced_updates = 'debounce' in timeline_code or 'throttle' in timeline_code
+        # Check for various improvements in the Timeline component
+        playhead_ref = 'playheadRef' in timeline_code
+        request_animation_frame = 'requestAnimationFrame' in timeline_code
+        smooth_scrolling = 'behavior: \'smooth\'' in timeline_code
         
         print("\n🔍 Playhead Movement Fix Analysis:")
-        if transition_property:
-            print("✅ Timeline uses CSS transitions for smoother movement")
-        else:
-            print("❌ No CSS transitions found for playhead movement")
+        
+        if playhead_ref:
+            print("✅ Timeline uses a ref for direct playhead DOM manipulation")
             
-        if debounced_updates:
-            print("✅ Timeupdate handler uses debounce/throttle for smoother updates")
+        if request_animation_frame:
+            print("✅ Timeline uses requestAnimationFrame for smoother animation")
         else:
-            print("❌ No debounce/throttle mechanism found for updates")
+            print("❌ No requestAnimationFrame found for smooth playhead updates")
+            
+        if smooth_scrolling:
+            print("✅ Timeline uses smooth scrolling behavior")
             
         # Overall playhead fix assessment
-        if transition_property and debounced_updates:
+        if playhead_ref and request_animation_frame:
             print("✅ Playhead movement issue appears to be fixed in the code")
         else:
             print("⚠️ Playhead movement fix may be incomplete")

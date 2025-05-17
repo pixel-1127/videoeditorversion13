@@ -16,6 +16,7 @@ const Timeline = forwardRef(({
   const timelineRef = useRef(null);
   const containerRef = useRef(null);
   const isDraggingRef = useRef(false);
+  const playheadRef = useRef(null); // Add a reference for the playhead
   const [containerWidth, setContainerWidth] = useState(0);
   const [timelineWidth, setTimelineWidth] = useState(0);
   

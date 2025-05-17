@@ -193,26 +193,15 @@ const VideoPreview = ({ videoRef, isPlaying, currentTime, duration, tracks, onTi
     }
   }, [currentTime, isReady]);
 
-  // Update parent component with current time
+  // Update parent component with current time - only use this for seeking, not during playback
   useEffect(() => {
     if (!isPlaying || !isReady || !player.current) return;
     
-    // Use requestAnimationFrame for smoother updates
-    let animationFrameId;
-    
-    const updateTimePosition = () => {
-      if (player.current) {
-        onTimeUpdate(player.current.currentTime());
-      }
-      animationFrameId = requestAnimationFrame(updateTimePosition);
-    };
-    
-    animationFrameId = requestAnimationFrame(updateTimePosition);
-    
+    // We'll handle normal playback updates via the timeupdate event
+    // This useEffect is only needed for seeking operations now
+
     return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
+      // No cleanup needed since we're not using requestAnimationFrame anymore
     };
   }, [isPlaying, isReady, onTimeUpdate]);
 

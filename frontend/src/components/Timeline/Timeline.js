@@ -58,7 +58,7 @@ const Timeline = forwardRef(({
   
   // Auto-scroll to keep the playhead visible during playback with improved performance
   useEffect(() => {
-    if (!containerRef.current || !isPlaying) return;
+    if (!containerRef.current) return;
     
     const playheadPosition = currentTime * pixelsPerSecond;
     const container = containerRef.current;
@@ -68,22 +68,33 @@ const Timeline = forwardRef(({
     const threshold = containerRect.width * 0.3;
     
     // Only auto-scroll if we're significantly outside the visible area
+    // Use smooth scrolling for better user experience
     if (playheadPosition < container.scrollLeft + (threshold / 2)) {
-      // Use smooth scrolling behavior when auto-scrolling
-      container.scrollTo({
-        left: Math.max(0, playheadPosition - threshold),
-        behavior: 'smooth'
-      });
+      // Smooth scrolling with requestAnimationFrame for performance
+      const targetScrollLeft = Math.max(0, playheadPosition - threshold);
+      
+      // Only scroll if the difference is significant
+      if (Math.abs(container.scrollLeft - targetScrollLeft) > 50) {
+        container.scrollTo({
+          left: targetScrollLeft,
+          behavior: 'smooth'
+        });
+      }
     } else if (playheadPosition > container.scrollLeft + containerRect.width - (threshold / 2)) {
-      container.scrollTo({
-        left: Math.min(
-          container.scrollWidth - containerRect.width,
-          playheadPosition - containerRect.width + threshold
-        ),
-        behavior: 'smooth'
-      });
+      const targetScrollLeft = Math.min(
+        container.scrollWidth - containerRect.width,
+        playheadPosition - containerRect.width + threshold
+      );
+      
+      // Only scroll if the difference is significant
+      if (Math.abs(container.scrollLeft - targetScrollLeft) > 50) {
+        container.scrollTo({
+          left: targetScrollLeft,
+          behavior: 'smooth'
+        });
+      }
     }
-  }, [currentTime, pixelsPerSecond, isPlaying]);
+  }, [currentTime, pixelsPerSecond]);
   
   // Render playhead at current time position
   const renderPlayhead = () => {

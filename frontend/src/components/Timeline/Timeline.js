@@ -124,6 +124,7 @@ const Timeline = forwardRef(({
   
   // Render playhead at current time position
   const renderPlayhead = () => {
+    // Initial position only - actual updates happen in the requestAnimationFrame effect
     const playheadPosition = currentTime * pixelsPerSecond;
     
     return (
@@ -132,8 +133,8 @@ const Timeline = forwardRef(({
         className="current-time-indicator absolute top-0 bottom-0 w-0.5 bg-editor-highlight z-10 pointer-events-none"
         style={{ 
           left: `${playheadPosition}px`,
-          transform: 'translateX(-50%)', // Center the playhead on the exact time position
-          transition: 'left 0.05s linear' // Add a very slight transition for smoother movement
+          transform: 'translateX(-50%)' // Center the playhead on the exact time position
+          // No transition here as we're using requestAnimationFrame for smoother updates
         }}
       />
     );

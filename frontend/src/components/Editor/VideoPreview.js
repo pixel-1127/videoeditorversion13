@@ -240,7 +240,7 @@ const VideoPreview = ({ videoRef, isPlaying, currentTime, duration, tracks, onTi
               ref={videoNode}
               className="video-js vjs-big-play-centered vjs-fluid"
               playsInline
-              muted
+              // muted removed to enable audio playback
               crossOrigin="anonymous"
             ></video>
           </div>

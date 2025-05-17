@@ -56,26 +56,34 @@ const Timeline = forwardRef(({
     onTimeUpdate(Math.max(0, Math.min(newTime, duration)));
   };
   
-  // Auto-scroll to keep the playhead visible during playback
+  // Auto-scroll to keep the playhead visible during playback with improved performance
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || !isPlaying) return;
     
     const playheadPosition = currentTime * pixelsPerSecond;
     const container = containerRef.current;
     const containerRect = container.getBoundingClientRect();
     
-    // Only auto-scroll if playhead is getting close to the edges
-    const threshold = containerRect.width * 0.2;
+    // Use a more generous threshold for auto-scrolling
+    const threshold = containerRect.width * 0.3;
     
-    if (playheadPosition < container.scrollLeft + threshold) {
-      container.scrollLeft = Math.max(0, playheadPosition - threshold);
-    } else if (playheadPosition > container.scrollLeft + containerRect.width - threshold) {
-      container.scrollLeft = Math.min(
-        container.scrollWidth - containerRect.width,
-        playheadPosition - containerRect.width + threshold
-      );
+    // Only auto-scroll if we're significantly outside the visible area
+    if (playheadPosition < container.scrollLeft + (threshold / 2)) {
+      // Use smooth scrolling behavior when auto-scrolling
+      container.scrollTo({
+        left: Math.max(0, playheadPosition - threshold),
+        behavior: 'smooth'
+      });
+    } else if (playheadPosition > container.scrollLeft + containerRect.width - (threshold / 2)) {
+      container.scrollTo({
+        left: Math.min(
+          container.scrollWidth - containerRect.width,
+          playheadPosition - containerRect.width + threshold
+        ),
+        behavior: 'smooth'
+      });
     }
-  }, [currentTime, pixelsPerSecond]);
+  }, [currentTime, pixelsPerSecond, isPlaying]);
   
   // Render playhead at current time position
   const renderPlayhead = () => {

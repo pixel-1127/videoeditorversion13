@@ -138,9 +138,19 @@ const VideoPreview = ({ videoRef, isPlaying, currentTime, duration, tracks, onTi
         setLoadingProgress(0);
       });
       
+      // Add a debounced timeupdate handler for smoother playhead movement
+      let lastUpdateTime = 0;
+      const updateThreshold = 1000 / 60; // 60fps (16.67ms) threshold for updates
+      
       vjsPlayer.on('timeupdate', () => {
-        // Don't update time here - we'll use requestAnimationFrame for smoother updates
-        // This avoids conflicts between the two update mechanisms
+        const now = Date.now();
+        // Only update if enough time has passed since the last update
+        if (now - lastUpdateTime > updateThreshold) {
+          lastUpdateTime = now;
+          if (isPlaying) {
+            onTimeUpdate(vjsPlayer.currentTime());
+          }
+        }
       });
       
       // Cleanup function

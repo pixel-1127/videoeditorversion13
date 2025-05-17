@@ -72,7 +72,7 @@ const VideoPreview = ({ videoRef, isPlaying, currentTime, duration, tracks, onTi
         preload: 'auto',
         fluid: true,
         playsinline: true,
-        muted: true,  // Start muted to avoid autoplay issues
+        muted: false,  // Allow audio playback
         responsive: true,
         sources: []  // Start with empty sources, we'll add them after
       });

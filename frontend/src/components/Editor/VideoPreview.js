@@ -188,13 +188,23 @@ const VideoPreview = ({ videoRef, isPlaying, currentTime, duration, tracks, onTi
   useEffect(() => {
     if (!isPlaying || !isReady || !player.current) return;
     
-    const timer = setInterval(() => {
+    // Use requestAnimationFrame for smoother updates
+    let animationFrameId;
+    
+    const updateTimePosition = () => {
       if (player.current) {
         onTimeUpdate(player.current.currentTime());
       }
-    }, 50);
+      animationFrameId = requestAnimationFrame(updateTimePosition);
+    };
     
-    return () => clearInterval(timer);
+    animationFrameId = requestAnimationFrame(updateTimePosition);
+    
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
   }, [isPlaying, isReady, onTimeUpdate]);
 
   return (

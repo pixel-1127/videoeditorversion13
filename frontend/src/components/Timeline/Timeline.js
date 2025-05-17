@@ -57,6 +57,31 @@ const Timeline = forwardRef(({
     onTimeUpdate(Math.max(0, Math.min(newTime, duration)));
   };
   
+  // Use requestAnimationFrame for smoother playhead updates
+  useEffect(() => {
+    if (!playheadRef.current) return;
+    
+    // Use requestAnimationFrame to sync with the browser's rendering cycle
+    // This provides smoother animation than regular DOM updates
+    let animationFrameId;
+    
+    const updatePlayhead = () => {
+      if (playheadRef.current) {
+        const playheadPosition = currentTime * pixelsPerSecond;
+        playheadRef.current.style.left = `${playheadPosition}px`;
+      }
+      animationFrameId = requestAnimationFrame(updatePlayhead);
+    };
+    
+    animationFrameId = requestAnimationFrame(updatePlayhead);
+    
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [currentTime, pixelsPerSecond]);
+  
   // Auto-scroll to keep the playhead visible during playback with improved performance
   useEffect(() => {
     if (!containerRef.current) return;

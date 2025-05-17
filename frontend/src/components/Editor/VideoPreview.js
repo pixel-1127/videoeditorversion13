@@ -139,9 +139,8 @@ const VideoPreview = ({ videoRef, isPlaying, currentTime, duration, tracks, onTi
       });
       
       vjsPlayer.on('timeupdate', () => {
-        if (isPlaying) {
-          onTimeUpdate(vjsPlayer.currentTime());
-        }
+        // Don't update time here - we'll use requestAnimationFrame for smoother updates
+        // This avoids conflicts between the two update mechanisms
       });
       
       // Cleanup function

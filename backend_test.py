@@ -190,11 +190,23 @@ def test_video_editor_fixes():
     return True
 
 def main():
-    # Skip API tests since the backend is not accessible
-    print("⚠️ Skipping API tests as the backend is not accessible")
+    # Get the backend URL from environment variable
+    backend_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://2db12a04-3cea-4bee-8ddb-879a7f5c9f0b.preview.emergentagent.com')
+    print(f"Using backend URL: {backend_url}")
+    
+    # Initialize the API tester
+    tester = VideoEditorAPITester(backend_url)
+    
+    # Test the root endpoint
+    root_success = tester.test_root_endpoint()
+    
+    # Test status check endpoints
+    client_name = f"test_client_{uuid.uuid4().hex[:8]}"
+    status_create_success, _ = tester.test_create_status_check(client_name)
+    status_get_success, _ = tester.test_get_status_checks()
     
     # Analyze the code fixes for audio and playhead issues
-    test_video_editor_fixes()
+    code_analysis_success = test_video_editor_fixes()
     
     # Summary of findings
     print("\n📋 Summary of Video Editor Issue Fixes:")
@@ -202,18 +214,23 @@ def main():
     print("   - Code analysis shows the 'muted' attribute has been removed or commented out from the video element")
     print("   - The video.js player is now configured with 'muted: false'")
     print("   - Implemented throttled updates for smoother audio/video synchronization")
-    print("   - UI testing could not be performed due to preview unavailability")
-    print("   - Based on code review, the audio playback issue appears to be fixed")
     
     print("\n2. Playhead Movement Issue:")
     print("   - Added a direct DOM reference (playheadRef) for more efficient playhead updates")
     print("   - Implemented requestAnimationFrame for smooth playhead animation synced with browser rendering")
     print("   - Added smooth scrolling behavior for timeline navigation")
     print("   - Optimized playhead positioning with a performance-focused approach")
-    print("   - UI testing could not be performed due to preview unavailability")
-    print("   - Based on code review, the playhead movement issue appears to be fixed")
     
-    return 0
+    # API test results
+    print("\n📊 API Test Results:")
+    print(f"Tests passed: {tester.tests_passed}/{tester.tests_run}")
+    
+    if tester.tests_passed == tester.tests_run:
+        print("✅ All API tests passed")
+    else:
+        print("⚠️ Some API tests failed")
+    
+    return 0 if tester.tests_passed == tester.tests_run and code_analysis_success else 1
 
 if __name__ == "__main__":
     sys.exit(main())

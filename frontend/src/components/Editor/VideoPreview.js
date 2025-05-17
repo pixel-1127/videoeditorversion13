@@ -142,14 +142,28 @@ const VideoPreview = ({ videoRef, isPlaying, currentTime, duration, tracks, onTi
       let lastUpdateTime = 0;
       const updateThreshold = 1000 / 60; // 60fps (16.67ms) threshold for updates
       
-      vjsPlayer.on('timeupdate', () => {
-        const now = Date.now();
-        // Only update if enough time has passed since the last update
-        if (now - lastUpdateTime > updateThreshold) {
-          lastUpdateTime = now;
-          if (isPlaying) {
-            onTimeUpdate(vjsPlayer.currentTime());
+      // Create a throttled update function for smoother playhead movement
+      const throttledUpdate = (callback, limit) => {
+        let waiting = false;
+        return function() {
+          if (!waiting) {
+            callback.apply(this, arguments);
+            waiting = true;
+            setTimeout(function() {
+              waiting = false;
+            }, limit);
           }
+        };
+      };
+      
+      // Use the throttled update function for timeupdate events
+      const smoothUpdate = throttledUpdate((currentTime) => {
+        onTimeUpdate(currentTime);
+      }, updateThreshold);
+      
+      vjsPlayer.on('timeupdate', () => {
+        if (isPlaying) {
+          smoothUpdate(vjsPlayer.currentTime());
         }
       });
       

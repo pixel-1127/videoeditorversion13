@@ -121,6 +121,9 @@
   width: 2px;
   background-color: #EC4899;
   z-index: 10;
+  pointer-events: none; /* Make sure it doesn't interfere with clicks */
+  box-shadow: 0 0 5px 0 rgba(236, 72, 153, 0.7); /* Add a glow effect */
+  transition: left 0.05s linear; /* Smoother animation */
 }
 
 /* Clip styles */

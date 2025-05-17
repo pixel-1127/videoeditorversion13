@@ -103,6 +103,7 @@ const Timeline = forwardRef(({
     
     return (
       <div 
+        ref={playheadRef}
         className="current-time-indicator absolute top-0 bottom-0 w-0.5 bg-editor-highlight z-10 pointer-events-none"
         style={{ 
           left: `${playheadPosition}px`,

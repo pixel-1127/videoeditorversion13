@@ -83,8 +83,12 @@ const Timeline = forwardRef(({
     
     return (
       <div 
-        className="current-time-indicator"
-        style={{ left: `${playheadPosition}px` }}
+        className="current-time-indicator absolute top-0 bottom-0 w-0.5 bg-editor-highlight z-10 pointer-events-none"
+        style={{ 
+          left: `${playheadPosition}px`,
+          transform: 'translateX(-50%)', // Center the playhead on the exact time position
+          transition: 'left 0.05s linear' // Add a very slight transition for smoother movement
+        }}
       />
     );
   };

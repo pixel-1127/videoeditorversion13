@@ -11,6 +11,8 @@ const ControlPanel = ({
 }) => {
   // Format time as MM:SS.ms
   const formatTime = (timeInSeconds) => {
+    if (isNaN(timeInSeconds)) return "0:00.00";
+    
     const minutes = Math.floor(timeInSeconds / 60);
     const seconds = Math.floor(timeInSeconds % 60);
     const milliseconds = Math.floor((timeInSeconds % 1) * 100);

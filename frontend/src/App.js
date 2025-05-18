@@ -475,98 +475,101 @@ const VideoEditor = () => {
         {/* Left Sidebar */}
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
         
-        {/* Main Editor */}
-        <div className="editor-workspace flex-1 flex flex-col overflow-hidden">
-          {/* Video Preview */}
-          <div className="video-preview-container p-4 flex-grow">
-            <VideoPreview 
-              videoRef={videoRef}
-              isPlaying={isPlaying}
-              currentTime={project.currentTime}
-              duration={project.duration}
-              tracks={project.tracks}
-              onTimeUpdate={handleTimeUpdate}
-            />
+        {/* Main Editor and Panels */}
+        <div className="editor-content flex flex-1 overflow-hidden">
+          {/* Main Editor Area */}
+          <div className="editor-workspace flex-1 flex flex-col overflow-hidden">
+            {/* Video Preview */}
+            <div className="video-preview-container p-4 flex-grow">
+              <VideoPreview 
+                videoRef={videoRef}
+                isPlaying={isPlaying}
+                currentTime={project.currentTime}
+                duration={project.duration}
+                tracks={project.tracks}
+                onTimeUpdate={handleTimeUpdate}
+              />
+            </div>
           </div>
           
-          {/* Timeline */}
-          <div className="timeline-container border-t border-editor-border">
-            <ControlPanel 
-              isPlaying={isPlaying} 
-              togglePlay={togglePlay}
-              currentTime={project.currentTime}
-              duration={project.duration}
-              onSplit={splitClip}
-              onDelete={deleteSelectedClip}
-            />
-            <Timeline 
-              ref={timelineRef}
-              tracks={project.tracks}
-              currentTime={project.currentTime}
-              duration={project.duration}
-              zoom={project.zoom}
-              selectedClipId={project.selectedClipId}
-              onSelectClip={selectClip}
-              onUpdateClip={updateClipPosition}
-              onTimeUpdate={handleTimeUpdate}
-            />
+          {/* Right Panel - Media Library / Effects / Export based on activeTab */}
+          <div className="editor-panel w-72 border-l border-editor-border overflow-y-auto editor-scrollbar h-full">
+            <AnimatePresence mode="wait">
+              {activeTab === "media" && (
+                <motion.div
+                  key="media"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.2 }}
+                  className="h-full"
+                >
+                  <MediaLibrary 
+                    media={mediaLibrary} 
+                    onAddToTimeline={addClipToTimeline}
+                    onFileUpload={handleFileUpload}
+                  />
+                </motion.div>
+              )}
+              
+              {activeTab === "effects" && (
+                <motion.div
+                  key="effects"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.2 }}
+                  className="h-full"
+                >
+                  <EffectsPanel 
+                    selectedClipId={project.selectedClipId}
+                    tracks={project.tracks}
+                  />
+                </motion.div>
+              )}
+              
+              {activeTab === "export" && (
+                <motion.div
+                  key="export"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.2 }}
+                  className="h-full"
+                >
+                  <ExportPanel 
+                    projectName={project.name}
+                    isExporting={isExporting}
+                    onExport={exportVideo}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
-        
-        {/* Right Panel - Media Library / Effects / Export based on activeTab */}
-        <div className="editor-panel w-72 border-l border-editor-border overflow-y-auto editor-scrollbar">
-          <AnimatePresence mode="wait">
-            {activeTab === "media" && (
-              <motion.div
-                key="media"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.2 }}
-                className="h-full"
-              >
-                <MediaLibrary 
-                  media={mediaLibrary} 
-                  onAddToTimeline={addClipToTimeline}
-                  onFileUpload={handleFileUpload}
-                />
-              </motion.div>
-            )}
-            
-            {activeTab === "effects" && (
-              <motion.div
-                key="effects"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.2 }}
-                className="h-full"
-              >
-                <EffectsPanel 
-                  selectedClipId={project.selectedClipId}
-                  tracks={project.tracks}
-                />
-              </motion.div>
-            )}
-            
-            {activeTab === "export" && (
-              <motion.div
-                key="export"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.2 }}
-                className="h-full"
-              >
-                <ExportPanel 
-                  projectName={project.name}
-                  isExporting={isExporting}
-                  onExport={exportVideo}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+      </div>
+      
+      {/* Timeline at the bottom - spans the full width */}
+      <div className="timeline-container border-t border-editor-border w-full">
+        <ControlPanel 
+          isPlaying={isPlaying} 
+          togglePlay={togglePlay}
+          currentTime={project.currentTime}
+          duration={project.duration}
+          onSplit={splitClip}
+          onDelete={deleteSelectedClip}
+        />
+        <Timeline 
+          ref={timelineRef}
+          tracks={project.tracks}
+          currentTime={project.currentTime}
+          duration={project.duration}
+          zoom={project.zoom}
+          selectedClipId={project.selectedClipId}
+          onSelectClip={selectClip}
+          onUpdateClip={updateClipPosition}
+          onTimeUpdate={handleTimeUpdate}
+        />
       </div>
     </div>
   );

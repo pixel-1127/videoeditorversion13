@@ -13,6 +13,7 @@ const VideoPreview = ({ videoRef, isPlaying, currentTime, duration, tracks, onTi
   // Local refs for videojs
   const videoNode = useRef(null);
   const player = useRef(null);
+  const lastUpdateTimeRef = useRef(0);
 
   // Find the video clip at the current time position
   useEffect(() => {
@@ -74,6 +75,7 @@ const VideoPreview = ({ videoRef, isPlaying, currentTime, duration, tracks, onTi
         playsinline: true,
         muted: false,  // Allow audio playback
         responsive: true,
+        aspectRatio: '16:9', // Add aspect ratio
         sources: []  // Start with empty sources, we'll add them after
       });
       
@@ -138,33 +140,23 @@ const VideoPreview = ({ videoRef, isPlaying, currentTime, duration, tracks, onTi
         setLoadingProgress(0);
       });
       
-      // Add a debounced timeupdate handler for smoother playhead movement
-      let lastUpdateTime = 0;
-      const updateThreshold = 1000 / 60; // 60fps (16.67ms) threshold for updates
-      
-      // Create a throttled update function for smoother playhead movement
-      const throttledUpdate = (callback, limit) => {
-        let waiting = false;
-        return function() {
-          if (!waiting) {
-            callback.apply(this, arguments);
-            waiting = true;
-            setTimeout(function() {
-              waiting = false;
-            }, limit);
-          }
-        };
-      };
-      
-      // Use the throttled update function for timeupdate events
-      const smoothUpdate = throttledUpdate((currentTime) => {
-        onTimeUpdate(currentTime);
-      }, updateThreshold);
-      
+      // Implement more responsive time updates for playhead movement
       vjsPlayer.on('timeupdate', () => {
         if (isPlaying) {
-          smoothUpdate(vjsPlayer.currentTime());
+          const now = Date.now();
+          // Update at most 30 times per second (33.33ms intervals)
+          if (now - lastUpdateTimeRef.current >= 33) {
+            const newTime = vjsPlayer.currentTime();
+            onTimeUpdate(newTime);
+            lastUpdateTimeRef.current = now;
+          }
         }
+      });
+      
+      // Additional event to update time precisely when video is paused
+      vjsPlayer.on('pause', () => {
+        const newTime = vjsPlayer.currentTime();
+        onTimeUpdate(newTime);
       });
       
       // Cleanup function
@@ -206,18 +198,6 @@ const VideoPreview = ({ videoRef, isPlaying, currentTime, duration, tracks, onTi
       player.current.currentTime(currentTime);
     }
   }, [currentTime, isReady]);
-
-  // Update parent component with current time - only use this for seeking, not during playback
-  useEffect(() => {
-    if (!isPlaying || !isReady || !player.current) return;
-    
-    // We'll handle normal playback updates via the timeupdate event
-    // This useEffect is only needed for seeking operations now
-
-    return () => {
-      // No cleanup needed since we're not using requestAnimationFrame anymore
-    };
-  }, [isPlaying, isReady, onTimeUpdate]);
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center relative">

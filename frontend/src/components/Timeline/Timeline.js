@@ -61,19 +61,21 @@ const Timeline = forwardRef(({
   useEffect(() => {
     if (!playheadRef.current) return;
     
-    // Use requestAnimationFrame to sync with the browser's rendering cycle
-    // This provides smoother animation than regular DOM updates
-    let animationFrameId;
-    
+    // Update playhead position immediately without animation frame
+    // This makes the playhead move more responsively
     const updatePlayhead = () => {
       if (playheadRef.current) {
         const playheadPosition = currentTime * pixelsPerSecond;
         playheadRef.current.style.left = `${playheadPosition}px`;
       }
-      animationFrameId = requestAnimationFrame(updatePlayhead);
     };
     
-    animationFrameId = requestAnimationFrame(updatePlayhead);
+    updatePlayhead();
+    
+    // We still use requestAnimationFrame for continuous updates if needed
+    const animationFrameId = requestAnimationFrame(() => {
+      updatePlayhead();
+    });
     
     return () => {
       if (animationFrameId) {
@@ -124,17 +126,17 @@ const Timeline = forwardRef(({
   
   // Render playhead at current time position
   const renderPlayhead = () => {
-    // Initial position only - actual updates happen in the requestAnimationFrame effect
+    // Initial position only - actual updates happen in the effect above
     const playheadPosition = currentTime * pixelsPerSecond;
     
     return (
       <div 
         ref={playheadRef}
-        className="current-time-indicator absolute top-0 bottom-0 w-0.5 bg-editor-highlight z-10 pointer-events-none"
+        className="current-time-indicator absolute top-0 bottom-0 w-0.5 bg-editor-scrubber z-10 pointer-events-none"
         style={{ 
           left: `${playheadPosition}px`,
-          transform: 'translateX(-50%)' // Center the playhead on the exact time position
-          // No transition here as we're using requestAnimationFrame for smoother updates
+          transform: 'translateX(-50%)', // Center the playhead on the exact time position
+          boxShadow: '0 0 5px 0 rgba(236, 72, 153, 0.7)' // Add glow effect
         }}
       />
     );

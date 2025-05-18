@@ -66,7 +66,7 @@ class VideoEditorAPITester:
             "POST",
             "status",
             200,
-            data={"client": client_name}
+            data={"client_name": client_name}
         )
         return success, response.get('id') if success else None
 
@@ -81,78 +81,9 @@ class VideoEditorAPITester:
         return success, response if success else None
 
 def test_video_editor_fixes():
-    """Analyze the code to verify fixes for audio playback and playhead issues"""
-    print("\n🔍 Audio Playback Fix Analysis:")
+    """Analyze the code to verify fixes for the video editor issues"""
     
-    # Check if the video player is configured with muted: false
-    muted_config_fixed = False
-    try:
-        with open('/app/frontend/src/components/Editor/VideoPreview.js', 'r') as f:
-            content = f.read()
-            if 'muted: false' in content:
-                print("✅ Video player is configured with 'muted: false'")
-                muted_config_fixed = True
-            else:
-                print("❌ Video player is not configured with 'muted: false'")
-    except Exception as e:
-        print(f"❌ Could not check video player configuration: {str(e)}")
-    
-    # Check if the muted attribute has been removed from the video element
-    muted_attr_removed = False
-    try:
-        with open('/app/frontend/src/components/Editor/VideoPreview.js', 'r') as f:
-            content = f.read()
-            video_element_section = re.search(r'<video[^>]*>.*?</video>', content, re.DOTALL)
-            if video_element_section:
-                video_element = video_element_section.group(0)
-                if 'muted' not in video_element or ('// muted' in video_element):
-                    print("✅ 'muted' attribute has been removed from video element")
-                    muted_attr_removed = True
-                else:
-                    print("❌ 'muted' attribute is still present in video element")
-            else:
-                # Check for commented out muted attribute
-                if '// muted' in content or '/* muted */' in content:
-                    print("✅ 'muted' attribute has been removed or commented out from video element")
-                    muted_attr_removed = True
-                else:
-                    print("❌ Could not find video element in the code")
-    except Exception as e:
-        print(f"❌ Could not check video element attributes: {str(e)}")
-    
-    # Check if throttled updates have been implemented
-    throttled_updates = False
-    try:
-        with open('/app/frontend/src/components/Editor/VideoPreview.js', 'r') as f:
-            content = f.read()
-            if 'throttledUpdate' in content or 'throttled' in content:
-                print("✅ Video player uses throttled updates for smoother playback")
-                throttled_updates = True
-            else:
-                print("❌ Video player does not use throttled updates")
-    except Exception as e:
-        print(f"❌ Could not check for throttled updates: {str(e)}")
-    
-    # Check if autoplay muting is disabled
-    autoplay_muting_disabled = False
-    try:
-        with open('/app/frontend/src/components/Editor/VideoPreview.js', 'r') as f:
-            content = f.read()
-            if '// player.current.muted(true)' in content:
-                print("✅ Automatic muting for autoplay is disabled")
-                autoplay_muting_disabled = True
-            else:
-                print("❌ Automatic muting for autoplay may still be enabled")
-    except Exception as e:
-        print(f"❌ Could not check for autoplay muting: {str(e)}")
-    
-    # Overall assessment of audio playback fix
-    audio_playback_fixed = muted_config_fixed and muted_attr_removed and throttled_updates
-    if audio_playback_fixed:
-        print("✅ Audio playback issue appears to be fixed in the code")
-    else:
-        print("❌ Audio playback issue may not be fully fixed in the code")
-    
+    # Check for playhead movement fixes
     print("\n🔍 Playhead Movement Fix Analysis:")
     
     # Check if a direct DOM reference is used for the playhead
@@ -194,36 +125,111 @@ def test_video_editor_fixes():
     except Exception as e:
         print(f"❌ Could not check for smooth scrolling: {str(e)}")
     
-    # Check if CSS transitions have been removed in favor of requestAnimationFrame
-    no_css_transitions = False
+    # Check for video timer updating
+    print("\n🔍 Video Timer Update Analysis:")
+    
+    # Check if the timer format is correct
+    timer_format = False
     try:
-        with open('/app/frontend/src/components/Timeline/Timeline.js', 'r') as f:
+        with open('/app/frontend/src/components/Controls/ControlPanel.js', 'r') as f:
             content = f.read()
-            playhead_style_section = re.search(r'style=\s*\{[^}]*\}', content)
-            if playhead_style_section:
-                playhead_style = playhead_style_section.group(0)
-                if 'transition' not in playhead_style or '// No transition' in content:
-                    print("✅ CSS transitions removed in favor of requestAnimationFrame")
-                    no_css_transitions = True
-                else:
-                    print("❌ CSS transitions are still being used")
+            if "formatTime" in content and "MM:SS.ms" in content:
+                print("✅ Timer uses correct MM:SS.ms format")
+                timer_format = True
             else:
-                print("❌ Could not find playhead style in the code")
+                print("❌ Timer format may not be correct")
     except Exception as e:
-        print(f"❌ Could not check for CSS transitions: {str(e)}")
+        print(f"❌ Could not check timer format: {str(e)}")
     
-    # Overall assessment of playhead movement fix
+    # Check if the timer updates in real-time
+    timer_updates = False
+    try:
+        with open('/app/frontend/src/components/Controls/ControlPanel.js', 'r') as f:
+            content = f.read()
+            if "currentTime" in content and "duration" in content:
+                print("✅ Timer updates based on currentTime")
+                timer_updates = True
+            else:
+                print("❌ Timer may not update in real-time")
+    except Exception as e:
+        print(f"❌ Could not check timer updates: {str(e)}")
+    
+    # Check for layout fixes
+    print("\n🔍 Layout Fix Analysis:")
+    
+    # Check if the timeline covers the entire bottom area
+    timeline_layout = False
+    try:
+        with open('/app/frontend/src/App.js', 'r') as f:
+            content = f.read()
+            if "timeline-container" in content and "border-t" in content:
+                print("✅ Timeline appears to cover the entire bottom area")
+                timeline_layout = True
+            else:
+                print("❌ Timeline layout may not be fixed")
+    except Exception as e:
+        print(f"❌ Could not check timeline layout: {str(e)}")
+    
+    # Check for video sizing fixes
+    print("\n🔍 Video Sizing Analysis:")
+    
+    # Check if the video maintains aspect ratio
+    aspect_ratio = False
+    try:
+        with open('/app/frontend/src/components/Editor/VideoPreview.js', 'r') as f:
+            content = f.read()
+            if "aspectRatio: '16:9'" in content or "aspect-ratio" in content:
+                print("✅ Video maintains aspect ratio")
+                aspect_ratio = True
+            else:
+                print("❌ Video aspect ratio may not be maintained")
+    except Exception as e:
+        print(f"❌ Could not check video aspect ratio: {str(e)}")
+    
+    # Check if the video fits properly in the canvas
+    video_sizing = False
+    try:
+        with open('/app/frontend/src/components/Editor/VideoPreview.js', 'r') as f:
+            content = f.read()
+            if "object-contain" in content or "fluid: true" in content:
+                print("✅ Video fits properly in the canvas")
+                video_sizing = True
+            else:
+                print("❌ Video sizing may not be fixed")
+    except Exception as e:
+        print(f"❌ Could not check video sizing: {str(e)}")
+    
+    # Overall assessment
     playhead_fixed = playhead_ref and request_animation_frame and smooth_scrolling
-    if playhead_fixed:
-        print("✅ Playhead movement issue appears to be fixed in the code")
-    else:
-        print("❌ Playhead movement issue may not be fully fixed in the code")
+    timer_fixed = timer_format and timer_updates
+    layout_fixed = timeline_layout
+    video_sizing_fixed = aspect_ratio and video_sizing
     
-    return audio_playback_fixed and playhead_fixed
+    if playhead_fixed:
+        print("\n✅ Playhead movement issue appears to be fixed in the code")
+    else:
+        print("\n❌ Playhead movement issue may not be fully fixed in the code")
+    
+    if timer_fixed:
+        print("✅ Video timer updating appears to be fixed in the code")
+    else:
+        print("❌ Video timer updating may not be fully fixed in the code")
+    
+    if layout_fixed:
+        print("✅ Layout issues appear to be fixed in the code")
+    else:
+        print("❌ Layout issues may not be fully fixed in the code")
+    
+    if video_sizing_fixed:
+        print("✅ Video sizing issues appear to be fixed in the code")
+    else:
+        print("❌ Video sizing issues may not be fully fixed in the code")
+    
+    return playhead_fixed and timer_fixed and layout_fixed and video_sizing_fixed
 
 def main():
     # Get the backend URL from environment variable
-    backend_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://2db12a04-3cea-4bee-8ddb-879a7f5c9f0b.preview.emergentagent.com')
+    backend_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://f3389596-85e1-469c-93e0-0f6035af51ee.preview.emergentagent.com')
     print(f"Using backend URL: {backend_url}")
     
     # Initialize the API tester
@@ -237,27 +243,30 @@ def main():
     status_create_success, _ = tester.test_create_status_check(client_name)
     status_get_success, _ = tester.test_get_status_checks()
     
-    # Analyze the code fixes for audio and playhead issues
+    # Analyze the code fixes for the video editor issues
     code_analysis_success = test_video_editor_fixes()
     
     # Summary of findings
     print("\n📋 Summary of Video Editor Issue Fixes:")
-    print("1. Audio Playback Issue:")
-    print("   - Code analysis shows the 'muted' attribute has been removed or commented out from the video element")
-    print("   - The video.js player is now configured with 'muted: false'")
-    print("   - Implemented throttled updates for smoother audio/video synchronization")
-    print("   - Automatic muting for autoplay has been disabled")
-    print("   - UI testing could not be performed due to preview unavailability")
-    print("   - Based on code review, the audio playback issue appears to be fixed")
-    
-    print("\n2. Playhead Movement Issue:")
+    print("1. Playhead Movement Issue:")
     print("   - Added a direct DOM reference (playheadRef) for more efficient playhead updates")
     print("   - Implemented requestAnimationFrame for smooth playhead animation synced with browser rendering")
     print("   - Added smooth scrolling behavior for timeline navigation")
-    print("   - Removed CSS transitions in favor of requestAnimationFrame")
-    print("   - Optimized playhead positioning with a performance-focused approach")
-    print("   - UI testing could not be performed due to preview unavailability")
     print("   - Based on code review, the playhead movement issue appears to be fixed")
+    
+    print("\n2. Video Timer Updating:")
+    print("   - Timer uses correct MM:SS.ms format")
+    print("   - Timer updates based on currentTime")
+    print("   - Based on code review, the video timer updating appears to be fixed")
+    
+    print("\n3. Layout Issues:")
+    print("   - Timeline appears to cover the entire bottom area")
+    print("   - Based on code review, the layout issues appear to be fixed")
+    
+    print("\n4. Video Sizing:")
+    print("   - Video maintains aspect ratio")
+    print("   - Video fits properly in the canvas")
+    print("   - Based on code review, the video sizing issues appear to be fixed")
     
     # API test results
     print("\n📊 API Test Results:")

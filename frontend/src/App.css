@@ -19,6 +19,7 @@
 .editor-content {
   display: flex;
   flex: 1;
+  min-height: 0; /* Important for proper flex behavior */
 }
 
 /* Video preview */
@@ -33,6 +34,7 @@
   position: relative;
   overflow: hidden;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+  flex: 1;
 }
 
 .video-player {
@@ -345,26 +347,26 @@
   animation: spin 1s linear infinite;
 }
 
-/* Loading Spinner */
-.loading-spinner {
-  width: 24px;
-  height: 24px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: #fff;
-  animation: spin 1s ease-in-out infinite;
-}
-
 /* Fix for the editor layout */
 .editor-main {
   display: flex;
   flex: 1;
   overflow: hidden;
+  position: relative;
 }
 
 /* Make sure the right panel doesn't extend to bottom */
 .editor-panel {
-  max-height: calc(100vh - 50px - 240px); /* Viewport height - header - timeline */
+  width: 288px; /* 72px * 4 (tailwind w-72) */
+  height: auto;
+  border-left: 1px solid #333;
+  overflow-y: auto;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 240px; /* Same height as timeline-container */
+  background-color: #121212;
+  z-index: 5;
 }
 
 @keyframes spin {

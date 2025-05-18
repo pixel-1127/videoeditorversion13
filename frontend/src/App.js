@@ -28,32 +28,31 @@ const initialProject = {
 };
 
 // Sample media clips for the library
-// Using locally stored sample videos to avoid CORS issues
 const sampleMedia = [
   { 
     id: "sample-1", 
     type: "video", 
     name: "Beach Sunset", 
     duration: 15,
-    // Using a video from Pexels that allows embedding and cross-origin usage
-    src: "https://player.vimeo.com/external/434045526.hd.mp4?s=c3f01ee6389c48189343d5ac00e7a3fe43dbc1f8&profile_id=174&oauth2_token_id=57447761",
-    thumbnail: "https://player.vimeo.com/external/434045526.hd.mp4?s=c3f01ee6389c48189343d5ac00e7a3fe43dbc1f8&profile_id=174&oauth2_token_id=57447761"
+    // Using direct links to videos that don't have CORS restrictions
+    src: "https://cdn.coverr.co/videos/coverr-clear-water-rushing-down-steam-2816/1080p.mp4",
+    thumbnail: "https://cdn.coverr.co/videos/coverr-clear-water-rushing-down-steam-2816/1080p.mp4"
   },
   { 
     id: "sample-2", 
     type: "video", 
     name: "City Traffic", 
     duration: 12,
-    src: "https://player.vimeo.com/external/371843484.sd.mp4?s=5b25f13584b3a5ba2ffe0d0f4add16a39c31850a&profile_id=164&oauth2_token_id=57447761",
-    thumbnail: "https://player.vimeo.com/external/371843484.sd.mp4?s=5b25f13584b3a5ba2ffe0d0f4add16a39c31850a&profile_id=164&oauth2_token_id=57447761"
+    src: "https://cdn.coverr.co/videos/coverr-sunset-over-mountains-9857/1080p.mp4",
+    thumbnail: "https://cdn.coverr.co/videos/coverr-sunset-over-mountains-9857/1080p.mp4"
   },
   { 
     id: "sample-3", 
     type: "video", 
     name: "Nature Walk", 
     duration: 18,
-    src: "https://player.vimeo.com/external/403288277.sd.mp4?s=0d8ecd32f40f5eb6a0b440f92c3c5e06ab988c6a&profile_id=164&oauth2_token_id=57447761",
-    thumbnail: "https://player.vimeo.com/external/403288277.sd.mp4?s=0d8ecd32f40f5eb6a0b440f92c3c5e06ab988c6a&profile_id=164&oauth2_token_id=57447761"
+    src: "https://cdn.coverr.co/videos/coverr-driving-in-new-zealand-mountains-5884/1080p.mp4",
+    thumbnail: "https://cdn.coverr.co/videos/coverr-driving-in-new-zealand-mountains-5884/1080p.mp4"
   },
   { 
     id: "sample-4", 
@@ -150,7 +149,8 @@ const VideoEditor = () => {
         name: mediaItem.name,
         start: lastClipEnd,
         duration: mediaItem.duration,
-        src: mediaItem.src
+        src: mediaItem.src,
+        file: mediaItem.file // Keep reference to the file if it exists
       };
       
       // Update the tracks with the new clip
@@ -160,11 +160,17 @@ const VideoEditor = () => {
         clips: [...updatedTracks[trackIndex].clips, newClip]
       };
       
+      // Calculate new duration
+      const newDuration = Math.max(prev.duration, lastClipEnd + mediaItem.duration);
+      
+      console.log(`Added clip "${mediaItem.name}" to ${mediaItem.type} track at position ${lastClipEnd}`);
+      console.log(`New project duration: ${newDuration}`);
+      
       return {
         ...prev,
         tracks: updatedTracks,
         selectedClipId: newClip.id,
-        duration: Math.max(prev.duration, lastClipEnd + mediaItem.duration)
+        duration: newDuration
       };
     });
   };
@@ -288,6 +294,18 @@ const VideoEditor = () => {
 
   // Handle time update
   const handleTimeUpdate = (time) => {
+    // Ensure time is a valid number
+    if (isNaN(time)) {
+      console.warn('Invalid time value:', time);
+      return;
+    }
+    
+    // Log less frequently to avoid console spam
+    const shouldLog = Math.round(time * 10) % 50 === 0; // Log roughly every 5 seconds
+    if (shouldLog) {
+      console.log(`Time updated: ${time.toFixed(2)}`);
+    }
+    
     setProject(prev => ({
       ...prev,
       currentTime: time
@@ -481,7 +499,7 @@ const VideoEditor = () => {
         {/* Main Editor Area */}
         <div className="editor-workspace flex-1 flex flex-col overflow-hidden">
           {/* Video Preview */}
-          <div className="video-preview-container flex-grow">
+          <div className="video-preview-container">
             <VideoPreview 
               videoRef={videoRef}
               isPlaying={isPlaying}
@@ -494,7 +512,7 @@ const VideoEditor = () => {
         </div>
         
         {/* Right Panel - Media Library / Effects / Export based on activeTab */}
-        <div className="editor-panel w-72 border-l border-editor-border overflow-y-auto editor-scrollbar">
+        <div className="editor-panel">
           <AnimatePresence mode="wait">
             {activeTab === "media" && (
               <motion.div
@@ -550,7 +568,7 @@ const VideoEditor = () => {
       </div>
       
       {/* Timeline at the bottom - spans the full width */}
-      <div className="timeline-container border-t border-editor-border">
+      <div className="timeline-container">
         <ControlPanel 
           isPlaying={isPlaying} 
           togglePlay={togglePlay}

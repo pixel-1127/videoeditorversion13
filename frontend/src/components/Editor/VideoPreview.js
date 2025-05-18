@@ -14,6 +14,7 @@ const VideoPreview = ({ videoRef, isPlaying, currentTime, duration, tracks, onTi
   const videoNode = useRef(null);
   const player = useRef(null);
   const lastUpdateTimeRef = useRef(0);
+  const lastEventUpdateTimeRef = useRef(0);
 
   // Find the video clip at the current time position
   useEffect(() => {
@@ -76,6 +77,10 @@ const VideoPreview = ({ videoRef, isPlaying, currentTime, duration, tracks, onTi
         muted: false,  // Allow audio playback
         responsive: true,
         aspectRatio: '16:9', // Add aspect ratio
+        controlBar: {
+          pictureInPictureToggle: false, // Hide PiP button to avoid issues
+        },
+        liveui: false,
         sources: []  // Start with empty sources, we'll add them after
       });
       
@@ -113,11 +118,6 @@ const VideoPreview = ({ videoRef, isPlaying, currentTime, duration, tracks, onTi
           type: activeVideo.file ? activeVideo.file.type || 'video/mp4' : 'video/mp4'
         });
         
-        // Set initial time if needed
-        if (currentTime > 0) {
-          vjsPlayer.currentTime(currentTime);
-        }
-        
         // Set up the videoRef for parent component
         if (videoRef) {
           videoRef.current = {
@@ -125,13 +125,17 @@ const VideoPreview = ({ videoRef, isPlaying, currentTime, duration, tracks, onTi
             seekTo: (seconds) => vjsPlayer.currentTime(seconds)
           };
         }
-        
-        setIsReady(true);
       });
       
       vjsPlayer.on('loadeddata', () => {
         console.log('Video data loaded');
         setLoadingProgress(1);
+        setIsReady(true);
+        
+        // Set initial time if needed
+        if (currentTime > 0) {
+          vjsPlayer.currentTime(currentTime);
+        }
       });
       
       vjsPlayer.on('error', (e) => {
@@ -140,21 +144,55 @@ const VideoPreview = ({ videoRef, isPlaying, currentTime, duration, tracks, onTi
         setLoadingProgress(0);
       });
       
-      // Implement more responsive time updates for playhead movement
+      // Implement more responsive time updates for playhead movement (30 times per second)
       vjsPlayer.on('timeupdate', () => {
-        if (isPlaying) {
-          const now = Date.now();
-          // Update at most 30 times per second (33.33ms intervals)
-          if (now - lastUpdateTimeRef.current >= 33) {
-            const newTime = vjsPlayer.currentTime();
-            onTimeUpdate(newTime);
-            lastUpdateTimeRef.current = now;
-          }
+        const now = Date.now();
+        // Update more frequently (33ms = ~30fps) for smoother playhead
+        if (now - lastUpdateTimeRef.current >= 33) {
+          const newTime = vjsPlayer.currentTime();
+          onTimeUpdate(newTime);
+          lastUpdateTimeRef.current = now;
         }
+      });
+      
+      // Additional event handlers to ensure accurate time tracking
+      vjsPlayer.on('play', () => {
+        // Setup a more frequent time update with requestAnimationFrame
+        const updateTime = () => {
+          if (player.current && isPlaying) {
+            const newTime = player.current.currentTime();
+            
+            // Only update if time has changed significantly (avoid unnecessary renders)
+            if (Math.abs(newTime - currentTime) > 0.01) {
+              onTimeUpdate(newTime);
+            }
+            
+            // Continue the animation loop while playing
+            requestAnimationFrame(updateTime);
+          }
+        };
+        
+        requestAnimationFrame(updateTime);
       });
       
       // Additional event to update time precisely when video is paused
       vjsPlayer.on('pause', () => {
+        const newTime = vjsPlayer.currentTime();
+        onTimeUpdate(newTime);
+      });
+      
+      // Update time even on seeking
+      vjsPlayer.on('seeking', () => {
+        const now = Date.now();
+        // Throttle events but ensure they're captured
+        if (now - lastEventUpdateTimeRef.current >= 16) {
+          const newTime = vjsPlayer.currentTime();
+          onTimeUpdate(newTime);
+          lastEventUpdateTimeRef.current = now;
+        }
+      });
+      
+      vjsPlayer.on('seeked', () => {
         const newTime = vjsPlayer.currentTime();
         onTimeUpdate(newTime);
       });
@@ -181,7 +219,7 @@ const VideoPreview = ({ videoRef, isPlaying, currentTime, duration, tracks, onTi
       player.current.play().catch(error => {
         console.error('Play error:', error);
         // Try with muted to overcome autoplay restrictions
-        // player.current.muted(true); // Don't mute by default
+        player.current.muted(true);
         player.current.play().catch(e => {
           console.error('Play error even with mute:', e);
           setPlaybackError(true);
@@ -242,7 +280,6 @@ const VideoPreview = ({ videoRef, isPlaying, currentTime, duration, tracks, onTi
               ref={videoNode}
               className="video-js vjs-big-play-centered vjs-fluid"
               playsInline
-              // muted removed to enable audio playback
               crossOrigin="anonymous"
             ></video>
           </div>

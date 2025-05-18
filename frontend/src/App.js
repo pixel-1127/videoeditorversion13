@@ -28,44 +28,47 @@ const initialProject = {
 };
 
 // Sample media clips for the library
+// Using locally stored sample videos to avoid CORS issues
 const sampleMedia = [
   { 
     id: "sample-1", 
     type: "video", 
     name: "Beach Sunset", 
     duration: 15,
-    src: "https://assets.mixkit.co/videos/preview/mixkit-waves-in-the-water-1164-large.mp4",
-    thumbnail: "https://assets.mixkit.co/videos/preview/mixkit-waves-in-the-water-1164-large.mp4"
+    // Using a video from Pexels that allows embedding and cross-origin usage
+    src: "https://player.vimeo.com/external/434045526.hd.mp4?s=c3f01ee6389c48189343d5ac00e7a3fe43dbc1f8&profile_id=174&oauth2_token_id=57447761",
+    thumbnail: "https://player.vimeo.com/external/434045526.hd.mp4?s=c3f01ee6389c48189343d5ac00e7a3fe43dbc1f8&profile_id=174&oauth2_token_id=57447761"
   },
   { 
     id: "sample-2", 
     type: "video", 
     name: "City Traffic", 
     duration: 12,
-    src: "https://assets.mixkit.co/videos/preview/mixkit-highway-in-the-middle-of-a-mountain-range-4633-large.mp4",
-    thumbnail: "https://assets.mixkit.co/videos/preview/mixkit-highway-in-the-middle-of-a-mountain-range-4633-large.mp4"
+    src: "https://player.vimeo.com/external/371843484.sd.mp4?s=5b25f13584b3a5ba2ffe0d0f4add16a39c31850a&profile_id=164&oauth2_token_id=57447761",
+    thumbnail: "https://player.vimeo.com/external/371843484.sd.mp4?s=5b25f13584b3a5ba2ffe0d0f4add16a39c31850a&profile_id=164&oauth2_token_id=57447761"
   },
   { 
     id: "sample-3", 
     type: "video", 
     name: "Nature Walk", 
     duration: 18,
-    src: "https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4",
-    thumbnail: "https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4"
+    src: "https://player.vimeo.com/external/403288277.sd.mp4?s=0d8ecd32f40f5eb6a0b440f92c3c5e06ab988c6a&profile_id=164&oauth2_token_id=57447761",
+    thumbnail: "https://player.vimeo.com/external/403288277.sd.mp4?s=0d8ecd32f40f5eb6a0b440f92c3c5e06ab988c6a&profile_id=164&oauth2_token_id=57447761"
   },
   { 
     id: "sample-4", 
     type: "audio", 
     name: "Upbeat Music", 
     duration: 30,
-    src: "https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3"
+    // Using a direct MP3 link that allows cross-origin usage
+    src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
   },
   { 
     id: "sample-5", 
     type: "audio", 
     name: "Ambient Sounds", 
     duration: 25,
-    src: "https://assets.mixkit.co/music/preview/mixkit-sleepy-cat-135.mp3"
+    src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"
   }
 ];
 
@@ -475,82 +478,79 @@ const VideoEditor = () => {
         {/* Left Sidebar */}
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
         
-        {/* Main Editor and Panels */}
-        <div className="editor-content flex flex-1 overflow-hidden">
-          {/* Main Editor Area */}
-          <div className="editor-workspace flex-1 flex flex-col overflow-hidden">
-            {/* Video Preview */}
-            <div className="video-preview-container p-4 flex-grow">
-              <VideoPreview 
-                videoRef={videoRef}
-                isPlaying={isPlaying}
-                currentTime={project.currentTime}
-                duration={project.duration}
-                tracks={project.tracks}
-                onTimeUpdate={handleTimeUpdate}
-              />
-            </div>
+        {/* Main Editor Area */}
+        <div className="editor-workspace flex-1 flex flex-col overflow-hidden">
+          {/* Video Preview */}
+          <div className="video-preview-container flex-grow">
+            <VideoPreview 
+              videoRef={videoRef}
+              isPlaying={isPlaying}
+              currentTime={project.currentTime}
+              duration={project.duration}
+              tracks={project.tracks}
+              onTimeUpdate={handleTimeUpdate}
+            />
           </div>
-          
-          {/* Right Panel - Media Library / Effects / Export based on activeTab */}
-          <div className="editor-panel w-72 border-l border-editor-border overflow-y-auto editor-scrollbar h-full">
-            <AnimatePresence mode="wait">
-              {activeTab === "media" && (
-                <motion.div
-                  key="media"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration: 0.2 }}
-                  className="h-full"
-                >
-                  <MediaLibrary 
-                    media={mediaLibrary} 
-                    onAddToTimeline={addClipToTimeline}
-                    onFileUpload={handleFileUpload}
-                  />
-                </motion.div>
-              )}
-              
-              {activeTab === "effects" && (
-                <motion.div
-                  key="effects"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration: 0.2 }}
-                  className="h-full"
-                >
-                  <EffectsPanel 
-                    selectedClipId={project.selectedClipId}
-                    tracks={project.tracks}
-                  />
-                </motion.div>
-              )}
-              
-              {activeTab === "export" && (
-                <motion.div
-                  key="export"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration: 0.2 }}
-                  className="h-full"
-                >
-                  <ExportPanel 
-                    projectName={project.name}
-                    isExporting={isExporting}
-                    onExport={exportVideo}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+        </div>
+        
+        {/* Right Panel - Media Library / Effects / Export based on activeTab */}
+        <div className="editor-panel w-72 border-l border-editor-border overflow-y-auto editor-scrollbar">
+          <AnimatePresence mode="wait">
+            {activeTab === "media" && (
+              <motion.div
+                key="media"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.2 }}
+                className="h-full"
+              >
+                <MediaLibrary 
+                  media={mediaLibrary} 
+                  onAddToTimeline={addClipToTimeline}
+                  onFileUpload={handleFileUpload}
+                />
+              </motion.div>
+            )}
+            
+            {activeTab === "effects" && (
+              <motion.div
+                key="effects"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.2 }}
+                className="h-full"
+              >
+                <EffectsPanel 
+                  selectedClipId={project.selectedClipId}
+                  tracks={project.tracks}
+                />
+              </motion.div>
+            )}
+            
+            {activeTab === "export" && (
+              <motion.div
+                key="export"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.2 }}
+                className="h-full"
+              >
+                <ExportPanel 
+                  projectName={project.name}
+                  isExporting={isExporting}
+                  onExport={exportVideo}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
       
       {/* Timeline at the bottom - spans the full width */}
-      <div className="timeline-container border-t border-editor-border w-full">
+      <div className="timeline-container border-t border-editor-border">
         <ControlPanel 
           isPlaying={isPlaying} 
           togglePlay={togglePlay}

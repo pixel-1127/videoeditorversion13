@@ -27,7 +27,6 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex-grow: 1;
   background-color: #0a0a0a;
   border-radius: 0.5rem;
   margin: 1rem;
@@ -90,6 +89,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  width: 100%;
   flex-shrink: 0; /* Prevent timeline from shrinking */
 }
 
@@ -353,6 +353,18 @@
   border-radius: 50%;
   border-top-color: #fff;
   animation: spin 1s ease-in-out infinite;
+}
+
+/* Fix for the editor layout */
+.editor-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Make sure the right panel doesn't extend to bottom */
+.editor-panel {
+  max-height: calc(100vh - 50px - 240px); /* Viewport height - header - timeline */
 }
 
 @keyframes spin {
